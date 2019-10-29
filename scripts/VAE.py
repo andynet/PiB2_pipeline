@@ -41,6 +41,10 @@ class VariationalAutoencoder(nn.Module):
         self.fc51 = nn.Linear(hl2_size, in_size)
         self.fc52 = nn.Linear(hl2_size, in_size)
 
+    def initialize_model(self, a=-0.1, b=0.1):
+        for parameter in self.parameters():
+            torch.nn.init.uniform_(parameter, a=a, b=b)
+
     def encode(self, x):
         """
         Encodes the datapoints to their latent distributions.
@@ -70,7 +74,7 @@ class VariationalAutoencoder(nn.Module):
 
     def decode(self, z, x):
         """
-        Decodes the latent space MC sample to distibution of x and 
+        Decodes the latent space MC sample to distibution of x and
         calculates the log_prob of x.
 
         Parameters
@@ -108,7 +112,8 @@ class VariationalAutoencoder(nn.Module):
 def ELBO(z_mean, z_logvar, log_probs):
     # From Auto-Encoding Variational Bayes
     D_KL = -0.5 * (1 + z_logvar - z_mean.pow(2) - z_logvar.exp()).sum(axis=1)
-    assert all(D_KL >= 0)
+    print(D_KL[0:10])
+    assert all(D_KL >= 0), print(D_KL)
 
     expected_recon_error_est = torch.mean(log_probs, axis=0)
 
