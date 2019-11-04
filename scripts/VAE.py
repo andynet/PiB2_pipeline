@@ -41,9 +41,9 @@ class VariationalAutoencoder(nn.Module):
         self.fc51 = nn.Linear(hl2_size, in_size)
         self.fc52 = nn.Linear(hl2_size, in_size)
 
-    def initialize_model(self, a=-0.1, b=0.1):
-        for parameter in self.parameters():
-            torch.nn.init.uniform_(parameter, a=a, b=b)
+    # def initialize_model(self, a=-0.1, b=0.1):
+    #     for parameter in self.parameters():
+    #         torch.nn.init.uniform_(parameter, a=a, b=b)
 
     def encode(self, x):
         """
@@ -69,6 +69,7 @@ class VariationalAutoencoder(nn.Module):
 
     def reparametrize(self, z_mean, z_logvar):
         z_std = torch.exp(0.5 * z_logvar)
+        # z_std = torch.nn.functional.softplus(z_logvar)
         z = torch.distributions.Normal(z_mean, z_std).rsample([self.L])
         return z
 
@@ -96,6 +97,7 @@ class VariationalAutoencoder(nn.Module):
         x_mean = self.fc51(z)
         x_logvar = self.fc52(z)
         x_std = torch.exp(0.5 * x_logvar)
+        # x_std = torch.nn.functional.softplus(x_logvar)
 
         log_prob_x_given_z = torch.distributions.Normal(x_mean, x_std).log_prob(x).sum(axis=2)
 
@@ -112,10 +114,11 @@ class VariationalAutoencoder(nn.Module):
 def ELBO(z_mean, z_logvar, log_probs):
     # From Auto-Encoding Variational Bayes
     D_KL = -0.5 * (1 + z_logvar - z_mean.pow(2) - z_logvar.exp()).sum(axis=1)
-    print(D_KL[0:10])
+    # print(D_KL[0:10])
     assert all(D_KL >= 0), print(D_KL)
 
     expected_recon_error_est = torch.mean(log_probs, axis=0)
 
+    # print(-D_KL.mean(), expected_recon_error_est.mean())
     avg_ELBO = torch.mean(expected_recon_error_est - D_KL)
     return -avg_ELBO
