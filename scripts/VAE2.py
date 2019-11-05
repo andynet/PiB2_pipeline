@@ -43,7 +43,15 @@ class VariationalAutoencoder(nn.Module):
         z = self.reparametrize(z_mean, z_logvar)
         x_mean, x_logvar = self.decode(z)
         return z_mean, z_logvar, x_mean, x_logvar
+    
+    def predict():
+        pass
 
+    def score():
+        pass
+    
+    def fit():
+        pass
 
 # %%
 def ELBO(z_mean, z_logvar, x_mean, x_logvar, x):
@@ -54,6 +62,6 @@ def ELBO(z_mean, z_logvar, x_mean, x_logvar, x):
     x_std = torch.exp(0.5 * x_logvar)
     dist = torch.distributions.Normal(x_mean, x_std)
     exp_NLL = dist.log_prob(x).sum(axis=2).mean(axis=0)
-    
+
     avg_ELBO = torch.mean(exp_NLL - KL_div)
     return -avg_ELBO
