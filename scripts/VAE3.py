@@ -2,6 +2,7 @@
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
+import numpy as np
 
 
 class VariationalAutoencoder(nn.Module):
@@ -47,11 +48,11 @@ class VariationalAutoencoder(nn.Module):
     def fit(self, x, loss_function, batch_size, optimizer):
         self.train()
         indices = np.random.permutation(range(x.shape[0]))
-        for i in range(0, X.shape[0], batch_size):
+        for i in range(0, x.shape[0], batch_size):
             x_batch = x[indices[i:i + batch_size], :]
             optimizer.zero_grad()
-            z_mean, z_logvar, x_mean, x_logvar = self.forward(data)
-            loss = loss_function(z_mean, z_logvar, x_mean, x_logvar, data)
+            z_mean, z_logvar, x_mean, x_logvar = self.forward(x_batch)
+            loss = loss_function(z_mean, z_logvar, x_mean, x_logvar, x_batch)
             loss.backward()
             optimizer.step()
 
@@ -60,11 +61,16 @@ class VariationalAutoencoder(nn.Module):
         x_mean, x_logvar = self.decode(z_mean)
         return x_mean
 
-    def score(self, x, loss_function):
+    def score(self, x, loss_function, batch_size):
         self.eval()
-        z_mean, z_logvar, x_mean, x_logvar = self.forward(x)
-        loss = loss_function(z_mean, z_logvar, x_mean, x_logvar, x)
-        return loss.item()
+        loss_total = 0
+        for i in range(0, x.shape[0], batch_size):
+            x_batch = x[i:i + batch_size, :]
+            z_mean, z_logvar, x_mean, x_logvar = self.forward(x_batch)
+            loss = loss_function(z_mean, z_logvar, x_mean, x_logvar, x_batch)
+            loss_total += loss.item() * x_batch.shape[0]
+        return loss_total / x.shape[0]
+
 
 # %%
 def ELBO(z_mean, z_logvar, x_mean, x_logvar, x):
