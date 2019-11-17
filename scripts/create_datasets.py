@@ -16,8 +16,19 @@ from scvi.dataset import (BrainLargeDataset, CortexDataset, PbmcDataset,
                           RetinaDataset, HematoDataset, CbmcDataset,
                           BrainSmallDataset, SmfishDataset)
 
+
 # %%
-data_dir = '/home/andy/Projects/pib2/PiB2_pipeline/data'
+def convert_to_npz(dataset, data_dir, name):
+    dataset = dataset(save_path=f'{data_dir}/{name}/')
+
+    features = dataset.X
+    labels = dataset.labels
+
+    np.savez(f'{data_dir}/{name}.npz', features=features, labels=labels)
+
+
+# %%
+data_dir = '/faststorage/home/andyb/pib2_git/data'
 
 # %% MNIST
 mnist_train = torch.utils.data.DataLoader(
@@ -34,30 +45,37 @@ mnist_labels = (torch.cat([mnist_train.dataset.targets,
                 .reshape((70000, -1)).numpy())
 
 np.savez(f'{data_dir}/MNIST.npz', features=mnist_features, labels=mnist_labels)
-
-# %%
 del mnist_train, mnist_test, mnist_features, mnist_labels
 
 # %% how to load data from npz
-data = np.load(f'{data_dir}/MNIST.npz')
+# data = np.load(f'{data_dir}/MNIST.npz')
 
-# %% scvi dataset
+# %% BrainSmall
 os.chdir(data_dir)
-brain_small_dataset = BrainSmallDataset(save_path=f'{data_dir}/')
+brain_small_dataset = BrainSmallDataset(save_path=f'{data_dir}/BrainSmall/',
+                                        save_path_10X=f'{data_dir}/BrainSmall/')
 
 brain_small_features = brain_small_dataset.X.toarray()
 brain_small_labels = brain_small_dataset.labels
 
 np.savez(f'{data_dir}/BrainSmall.npz', features=brain_small_features, labels=brain_small_labels)
-
-# %%
 del brain_small_dataset, brain_small_features, brain_small_labels
 
-# %% scvi dataset
-os.chdir(data_dir)
-dataset = CortexDataset(save_path=f'{data_dir}/')
+# %%
+dataset_objects = [BrainLargeDataset, CortexDataset, PbmcDataset,
+                   RetinaDataset, HematoDataset, CbmcDataset,
+                   BrainSmallDataset, SmfishDataset]
 
-features = dataset.X
-labels = dataset.labels
+for item in dataset_objects:
+    print(str(item), item.__bases__)
 
-np.savez(f'{data_dir}/Cortex.npz', features=features, labels=labels)
+# successfully downloaded
+# convert_to_npz(CortexDataset, data_dir, 'Cortex')
+# convert_to_npz(PbmcDataset, data_dir, 'Pbmc')
+# convert_to_npz(RetinaDataset, data_dir, 'Retina')
+# convert_to_npz(CbmcDataset, data_dir, 'Cbmc')
+# convert_to_npz(SmfishDataset, data_dir, 'Smfish')
+
+convert_to_npz(BrainLargeDataset, data_dir, 'BrainLarge')  # OOM
+convert_to_npz(HematoDataset, data_dir, 'Hemato')  # FileNotFoundError
+# convert_to_npz(BrainSmallDataset, data_dir, 'BrainSmall')  # TypeError

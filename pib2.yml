@@ -1,0 +1,22 @@
+name: pib2
+channels:
+  - bioconda
+  - pytorch
+  - spyder-ide
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - scipy
+  - pandas
+  - feather-format
+  - scikit-learn
+  - pytorch
+  - torchvision
+  - cudatoolkit
+  - spyder=4
+  - notebook
+  - matplotlib
+  - seaborn
+  - scvi
+
