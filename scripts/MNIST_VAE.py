@@ -3,7 +3,7 @@ import argparse
 import torch
 import torch.utils.data
 from torchvision.utils import save_image
-from scripts.VAE3 import VariationalAutoencoder, ELBO
+from scripts.VAE import VariationalAutoencoder, ELBO
 import numpy as np
 
 
@@ -83,11 +83,13 @@ args = argparse.Namespace()
 args.batch_size = 256
 args.epochs = 15
 args.cuda = False
-args.seed = 1
+args.seed = 0
 args.dataset_file = '/faststorage/home/andyb/pib2_git/data/MNIST.npz'
 
 # %%
 torch.manual_seed(args.seed)
+np.random.seed(args.seed)
+
 device = torch.device("cuda" if args.cuda else "cpu")
 dataset = split_dataset(args.dataset_file, 40000, device)
 model = VariationalAutoencoder().to(device)
