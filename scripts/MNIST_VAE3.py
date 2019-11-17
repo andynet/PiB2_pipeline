@@ -26,7 +26,8 @@ def min_max_scale(data, center=False):
     min_ = data.min(axis=0)
     max_ = data.max(axis=0)
 
-    scaled_data = np.divide(data - min_, max_ - min_, where=(max_ - min_ != 0))
+    denom = np.broadcast_to((max_ - min_), data.shape)
+    scaled_data = np.divide((data - min_), denom, where=(~np.isclose(denom, 0)))
 
     if center:
         mean_ = scaled_data.mean(axis=0)
@@ -83,7 +84,7 @@ args.batch_size = 256
 args.epochs = 15
 args.cuda = False
 args.seed = 1
-args.dataset_file = '/home/andy/Projects/pib2/PiB2_pipeline/data/MNIST.npz'
+args.dataset_file = '/faststorage/home/andyb/pib2_git/data/MNIST.npz'
 
 # %%
 torch.manual_seed(args.seed)
@@ -129,8 +130,8 @@ for epoch in range(1, args.epochs + 1):
 # %%
 comparison = torch.cat(comparison)
 
-save_image(comparison.cpu(), 'results/reconstruction.png', nrow=nrow)
-print('results/reconstruction.png')
+save_image(comparison.cpu(), '../results/reconstruction.png', nrow=nrow)
+print('../results/reconstruction.png')
 
 # %%
 labels = dataset.labels_test.numpy()
@@ -154,5 +155,5 @@ x_mean, _ = model.decode(z)
 x_mean = min_max_scale_inv(x_mean.detach().numpy(), dataset.min, dataset.max, dataset.mean)
 x_mean /= 255
 x_mean = torch.tensor(x_mean).view(-1, 1, 28, 28)
-filename = f'results/sample.png'
+filename = f'../results/sample.png'
 save_image(tensor=x_mean, filename=filename, nrow=20)
