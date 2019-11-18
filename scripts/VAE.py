@@ -84,3 +84,30 @@ def ELBO(z_mean, z_logvar, x_mean, x_logvar, x):
 
     avg_ELBO = torch.mean(exp_NLL - KL_div)
     return -avg_ELBO
+
+
+# %%
+def min_max_scale(data, center=False):
+    min_ = data.min(axis=0)
+    max_ = data.max(axis=0)
+
+    denom = np.broadcast_to((max_ - min_), data.shape)
+    scaled_data = np.divide((data - min_), denom, where=(~np.isclose(denom, 0)))
+
+    if center:
+        mean_ = scaled_data.mean(axis=0)
+        scaled_data = scaled_data - mean_
+    else:
+        mean_ = None
+
+    return scaled_data, min_, max_, mean_
+
+
+# %%
+def min_max_scale_inv(data, min_, max_, mean_):
+    if mean_ is not None:
+        orig_data = ((data + mean_) * (max_ - min_)) + min_
+    else:
+        orig_data = (data * (max_ - min_)) + min_
+
+    return orig_data
